@@ -1,0 +1,24 @@
+name: Restore approved Romanija site
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - restored_site.zip
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Restore approved pages and images
+        run: |
+          unzip -o restored_site.zip -d .
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html sr.html assets/
+          git commit -m "Restore approved Romanija images and pages" || exit 0
+          git push
