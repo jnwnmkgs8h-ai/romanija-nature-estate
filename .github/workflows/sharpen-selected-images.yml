@@ -1,0 +1,49 @@
+name: Sharpen selected Romanija images
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/sharpen-selected-images.yml
+
+permissions:
+  contents: write
+
+jobs:
+  sharpen:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Install Pillow
+        run: python -m pip install --quiet pillow
+      - name: Sharpen only selected images
+        run: |
+          python - <<'PY'
+          from PIL import Image, ImageFilter
+          from pathlib import Path
+
+          # Only these five files are changed. They are shared by English and Serbian pages.
+          targets = {
+              'assets/image-01.jpg': 2.0,  # hero: Reconnect with nature
+              'assets/image-02.jpg': 2.0,  # The landscape is the main character
+              'assets/image-04.jpg': 2.0,  # Find your rhythm — Slow
+              'assets/image-05.jpg': 2.0,  # Find your rhythm — Active
+              'assets/image-06.jpg': 2.0,  # Find your rhythm — Participate
+          }
+
+          for filename, scale in targets.items():
+              path = Path(filename)
+              im = Image.open(path).convert('RGB')
+              w, h = im.size
+              im = im.resize((round(w*scale), round(h*scale)), Image.Resampling.LANCZOS)
+              im = im.filter(ImageFilter.UnsharpMask(radius=1.25, percent=125, threshold=3))
+              im.save(path, 'JPEG', quality=95, subsampling=0, optimize=True)
+              print(filename, (w,h), '->', im.size)
+          PY
+      - name: Commit sharpened images only
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/image-01.jpg assets/image-02.jpg assets/image-04.jpg assets/image-05.jpg assets/image-06.jpg
+          git commit -m "Sharpen hero, rhythm and landscape images" || exit 0
+          git push
