@@ -30,6 +30,7 @@ jobs:
             goodparts/part09.txt \
             goodparts/part10.txt > /tmp/images.b64
           base64 --decode /tmp/images.b64 > /tmp/romanija-approved-images.zip
+          echo "db0e3143406badd48236744355db3a3f0980ed2dd425b28d257171d35716da69  /tmp/romanija-approved-images.zip" | sha256sum -c -
           unzip -t /tmp/romanija-approved-images.zip
           rm -rf assets
           mkdir -p assets
