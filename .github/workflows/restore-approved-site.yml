@@ -16,6 +16,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - name: Verify image transfer chunks
+        run: |
+          cat > /tmp/chunks.sha256 <<'EOF'
+          20786ba8c0468ee11546b3dd78f755667caec72fa4cbf85a6fe5392b7be0372a  restore-parts/part01.txt
+          de7314570c3b01c3e99973e62c245ee377aac17323a08d274aa5c11743191974  restore-parts/part02.txt
+          e93fc4a21a03f34557678f56f5a618019c70ed9d4eee7aea931ad8531e7514f1  restore-parts/part03.txt
+          025f8d76a7a99c847a580f0408a993115141af23dc37062372dcefe6019caeb8  restore-parts/part04.txt
+          50e644fe0cde7f78721a3d8f5c19b1c03b5477525628f821df7ddd277456cfcf  goodparts/part05.txt
+          5fe0985fe07e5f55335b70db9683c60d68a5de31a300b7bff605e81e477986a1  goodparts/part06.txt
+          a9087f2ea5bb1d8a443b34949e4b1be923d08f0f4469b2e813aab1592947d123  goodparts/part07.txt
+          51eb04a599d593c038550182b421f0e672b6d818558d3975437f3f63abe3c11e  goodparts/part08.txt
+          9c2262140a30db8820ced8ac3c952563a0b4f0d7830ab90406c95e8df324c48d  goodparts/part09.txt
+          2291272b57874ce50a889a025597a6fe74d61a1bab72ed9a79901717fabbd057  goodparts/part10.txt
+          EOF
+          sha256sum -c /tmp/chunks.sha256
       - name: Rebuild and validate approved image archive
         run: |
           cat \
