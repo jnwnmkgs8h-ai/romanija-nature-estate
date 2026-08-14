@@ -1,10 +1,12 @@
-name: Restore approved Romanija site
+name: Restore approved Romanija images
 
 on:
   push:
     branches: [main]
     paths:
-      - restored_site.zip
+      - .github/workflows/restore-approved-site.yml
+      - goodparts/**
+      - restore-parts/**
 
 permissions:
   contents: write
@@ -14,11 +16,30 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
-      - name: Restore approved pages and images
+      - name: Rebuild and validate approved image archive
         run: |
-          unzip -o restored_site.zip -d .
+          cat \
+            restore-parts/part01.txt \
+            restore-parts/part02.txt \
+            restore-parts/part03.txt \
+            restore-parts/part04.txt \
+            goodparts/part05.txt \
+            goodparts/part06.txt \
+            goodparts/part07.txt \
+            goodparts/part08.txt \
+            goodparts/part09.txt \
+            goodparts/part10.txt > /tmp/images.b64
+          base64 --decode /tmp/images.b64 > /tmp/romanija-approved-images.zip
+          unzip -t /tmp/romanija-approved-images.zip
+          rm -rf assets
+          mkdir -p assets
+          unzip -o /tmp/romanija-approved-images.zip -d assets
+          test "$(find assets -maxdepth 1 -name 'image-*.jpg' | wc -l)" -eq 10
+          ls -lh assets
+      - name: Commit restored images
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add index.html sr.html assets/
-          git commit -m "Restore approved Romanija images and pages" || exit 0
+          git add assets/
+          git commit -m "Restore approved Romanija images" || exit 0
           git push
